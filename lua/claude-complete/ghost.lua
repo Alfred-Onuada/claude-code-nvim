@@ -128,33 +128,41 @@ function M.accept()
   -- Clear ghost text first
   M.clear()
 
-  -- Get current line
-  local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1] or ""
-
-  -- Split insertion text into lines
-  local lines = vim.split(text, "\n", { plain = true })
-
-  if #lines == 1 then
-    -- Single line: insert at cursor position
-    local new_line = current_line:sub(1, col) .. text .. current_line:sub(col + 1)
-    vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { new_line })
-    -- Move cursor to end of inserted text
-    vim.api.nvim_win_set_cursor(0, { row, col + #text })
-  else
-    -- Multiple lines
-    local first_line = current_line:sub(1, col) .. lines[1]
-    local last_line = lines[#lines] .. current_line:sub(col + 1)
-
-    local new_lines = { first_line }
-    for i = 2, #lines - 1 do
-      table.insert(new_lines, lines[i])
+  -- Schedule buffer modification to avoid E565 in restricted contexts
+  vim.schedule(function()
+    -- Verify we're still in the right buffer and position
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      return
     end
-    table.insert(new_lines, last_line)
 
-    vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, new_lines)
-    -- Move cursor to end of inserted text
-    vim.api.nvim_win_set_cursor(0, { row + #lines - 1, #lines[#lines] })
-  end
+    -- Get current line
+    local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1] or ""
+
+    -- Split insertion text into lines
+    local lines = vim.split(text, "\n", { plain = true })
+
+    if #lines == 1 then
+      -- Single line: insert at cursor position
+      local new_line = current_line:sub(1, col) .. text .. current_line:sub(col + 1)
+      vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { new_line })
+      -- Move cursor to end of inserted text
+      vim.api.nvim_win_set_cursor(0, { row, col + #text })
+    else
+      -- Multiple lines
+      local first_line = current_line:sub(1, col) .. lines[1]
+      local last_line = lines[#lines] .. current_line:sub(col + 1)
+
+      local new_lines = { first_line }
+      for i = 2, #lines - 1 do
+        table.insert(new_lines, lines[i])
+      end
+      table.insert(new_lines, last_line)
+
+      vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, new_lines)
+      -- Move cursor to end of inserted text
+      vim.api.nvim_win_set_cursor(0, { row + #lines - 1, #lines[#lines] })
+    end
+  end)
 
   return true
 end
@@ -181,21 +189,28 @@ function M.accept_word()
   local bufnr = M.current.bufnr
   local row = M.current.row
   local col = M.current.col
+  local remaining = text:sub(#word_end + 1)
 
   -- Clear ghost text
   M.clear()
 
-  -- Insert word
-  local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1] or ""
-  local new_line = current_line:sub(1, col) .. word_end .. current_line:sub(col + 1)
-  vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { new_line })
-  vim.api.nvim_win_set_cursor(0, { row, col + #word_end })
+  -- Schedule buffer modification
+  vim.schedule(function()
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      return
+    end
 
-  -- Show remaining text
-  local remaining = text:sub(#word_end + 1)
-  if remaining ~= "" then
-    M.show(remaining, bufnr, row, col + #word_end)
-  end
+    -- Insert word
+    local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1] or ""
+    local new_line = current_line:sub(1, col) .. word_end .. current_line:sub(col + 1)
+    vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { new_line })
+    vim.api.nvim_win_set_cursor(0, { row, col + #word_end })
+
+    -- Show remaining text
+    if remaining ~= "" then
+      M.show(remaining, bufnr, row, col + #word_end)
+    end
+  end)
 
   return true
 end
@@ -221,23 +236,30 @@ function M.accept_line()
   -- Clear ghost text
   M.clear()
 
-  -- Insert first line
-  local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1] or ""
-  local new_line = current_line:sub(1, col) .. first_line .. current_line:sub(col + 1)
-  vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { new_line })
-  vim.api.nvim_win_set_cursor(0, { row, col + #first_line })
+  -- Schedule buffer modification
+  vim.schedule(function()
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      return
+    end
 
-  -- Show remaining lines
-  if #lines > 1 then
-    local remaining_lines = {}
-    for i = 2, #lines do
-      table.insert(remaining_lines, lines[i])
+    -- Insert first line
+    local current_line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1] or ""
+    local new_line = current_line:sub(1, col) .. first_line .. current_line:sub(col + 1)
+    vim.api.nvim_buf_set_lines(bufnr, row - 1, row, false, { new_line })
+    vim.api.nvim_win_set_cursor(0, { row, col + #first_line })
+
+    -- Show remaining lines
+    if #lines > 1 then
+      local remaining_lines = {}
+      for i = 2, #lines do
+        table.insert(remaining_lines, lines[i])
+      end
+      local remaining = table.concat(remaining_lines, "\n")
+      if remaining ~= "" then
+        M.show(remaining, bufnr, row, col + #first_line)
+      end
     end
-    local remaining = table.concat(remaining_lines, "\n")
-    if remaining ~= "" then
-      M.show(remaining, bufnr, row, col + #first_line)
-    end
-  end
+  end)
 
   return true
 end

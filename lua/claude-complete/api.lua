@@ -30,28 +30,22 @@ local function build_prompt(context)
   end
 
   local prompt = string.format(
-    [[You are a code completion assistant. Complete the code at the cursor position marked by <|CURSOR|>.
+    [[You are an inline code completion engine. Output ONLY the raw code to insert at <|CURSOR|>.
 
-RULES:
-- Only output the completion text that should be inserted at <|CURSOR|>, nothing else
-- Do not include explanations or markdown
-- Do not repeat code that already exists before or after the cursor
-- Keep completions concise and relevant
-- Match the existing code style
-- Consider the code AFTER the cursor when completing - your completion should flow naturally into it
-- If no completion is appropriate, output nothing
+CRITICAL RULES:
+- Output ONLY raw code, NO markdown, NO code fences, NO ```
+- NO explanations, NO comments about what you're doing
+- Do NOT repeat existing code before or after cursor
+- Complete the current statement/expression naturally
+- Match the existing code style and indentation
+- If the code is already complete or no completion makes sense, output NOTHING (empty response)
+- Do NOT invent new code if the cursor is at a natural stopping point
 
-File: %s
-Language: %s
+File: %s (%s)
 
-Current file content (<|CURSOR|> marks where completion should be inserted):
-```
+<|CURSOR|> marks insertion point:
 %s
-```
-
-%s
-
-Output only the text to insert at <|CURSOR|>:]],
+%s]],
     context.filename or "unknown",
     context.filetype or "text",
     file_content,

@@ -66,7 +66,9 @@ local function setup_keymaps()
   -- Accept completion with Tab (only when ghost text visible)
   vim.keymap.set("i", keymaps.accept, function()
     if ghost.is_visible() then
-      completion.accept()
+      vim.schedule(function()
+        completion.accept()
+      end)
       return ""
     end
     return keymaps.accept
@@ -75,7 +77,9 @@ local function setup_keymaps()
   -- Dismiss with Escape
   vim.keymap.set("i", keymaps.dismiss, function()
     if ghost.is_visible() then
-      completion.dismiss()
+      vim.schedule(function()
+        completion.dismiss()
+      end)
       return ""
     end
     return keymaps.dismiss
@@ -84,7 +88,9 @@ local function setup_keymaps()
   -- Accept word
   vim.keymap.set("i", keymaps.accept_word, function()
     if ghost.is_visible() then
-      completion.accept_word()
+      vim.schedule(function()
+        completion.accept_word()
+      end)
       return ""
     end
     return keymaps.accept_word
@@ -93,7 +99,9 @@ local function setup_keymaps()
   -- Accept line
   vim.keymap.set("i", keymaps.accept_line, function()
     if ghost.is_visible() then
-      completion.accept_line()
+      vim.schedule(function()
+        completion.accept_line()
+      end)
       return ""
     end
     return keymaps.accept_line
