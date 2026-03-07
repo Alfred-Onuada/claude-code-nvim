@@ -58,7 +58,7 @@ use {
    :ClaudeCompleteSetup
    ```
 
-3. Start typing! Completions will appear as ghost text after 300ms.
+3. Start typing! Completions will appear as ghost text after 150ms.
 
 ## Usage
 
@@ -99,7 +99,7 @@ require("claude-complete").setup({
   max_tokens = 256,
 
   -- Debounce delay in milliseconds
-  debounce_ms = 300,
+  debounce_ms = 150,
 
   -- Context settings
   context = {
@@ -143,7 +143,7 @@ For autocomplete, **Haiku** is recommended due to its low latency.
 
 ## How It Works
 
-1. **Debouncing**: Waits 300ms after you stop typing before requesting
+1. **Debouncing**: Waits 150ms after you stop typing before requesting
 2. **Context Building**: Gathers current file content, imports, and buffer names
 3. **Streaming**: Sends request to Claude API with streaming enabled
 4. **Ghost Text**: Renders completions as virtual text using Neovim extmarks
