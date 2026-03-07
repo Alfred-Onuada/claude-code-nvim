@@ -48,12 +48,12 @@ use {
 
 2. Configure the API key (choose one method):
 
-   **Option A: Environment variable (recommended)**
+   **Option A: Environment variable**
    ```bash
    export ANTHROPIC_API_KEY="your-api-key"
    ```
 
-   **Option B: Setup command**
+   **Option B: Setup command (stores in macOS Keychain)**
    ```vim
    :ClaudeCompleteSetup
    ```

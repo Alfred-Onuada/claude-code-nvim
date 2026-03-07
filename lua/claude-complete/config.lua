@@ -1,6 +1,63 @@
 -- Configuration management for claude-complete.nvim
 local M = {}
 
+-- Keychain constants
+local KEYCHAIN_SERVICE = "claude-complete-nvim"
+local KEYCHAIN_ACCOUNT = "anthropic-api-key"
+
+-- Get API key from macOS Keychain
+local function keychain_get()
+	local handle = io.popen(
+		string.format(
+			'security find-generic-password -s "%s" -a "%s" -w 2>/dev/null',
+			KEYCHAIN_SERVICE,
+			KEYCHAIN_ACCOUNT
+		)
+	)
+	if not handle then
+		return nil
+	end
+
+	local result = handle:read("*a")
+	handle:close()
+
+	-- Trim whitespace
+	result = result:gsub("^%s*(.-)%s*$", "%1")
+
+	if result == "" then
+		return nil
+	end
+
+	return result
+end
+
+-- Save API key to macOS Keychain
+local function keychain_set(api_key)
+	-- -U flag updates existing entry or creates new one
+	local exit_code = os.execute(
+		string.format(
+			'security add-generic-password -s "%s" -a "%s" -w "%s" -U',
+			KEYCHAIN_SERVICE,
+			KEYCHAIN_ACCOUNT,
+			api_key:gsub('"', '\\"') -- Escape quotes in the key
+		)
+	)
+
+	return exit_code == 0 or exit_code == true
+end
+
+-- Delete API key from macOS Keychain
+local function keychain_delete()
+	local exit_code = os.execute(
+		string.format(
+			'security delete-generic-password -s "%s" -a "%s" 2>/dev/null',
+			KEYCHAIN_SERVICE,
+			KEYCHAIN_ACCOUNT
+		)
+	)
+	return exit_code == 0 or exit_code == true
+end
+
 -- Default configuration
 M.defaults = {
 	api_key = nil,
@@ -36,7 +93,7 @@ local function get_config_path()
 	return config_dir .. "/claude-complete.json"
 end
 
--- Load API key from config file
+-- Load config from file (for non-sensitive settings like model)
 local function load_config_file()
 	local path = get_config_path()
 	local file = io.open(path, "r")
@@ -100,17 +157,23 @@ end
 function M.setup(opts)
 	opts = opts or {}
 
-	-- Load from config file first
+	-- Load from config file first (for non-sensitive settings like model)
 	local file_config = load_config_file()
 
 	-- Merge: defaults < file_config < user opts
 	M.options = deep_merge(M.defaults, file_config)
 	M.options = deep_merge(M.options, opts)
 
-	-- Check for environment variable as highest priority for API key
+	-- API key priority: env var > Keychain > user opts > file config
 	local env_key = vim.env.ANTHROPIC_API_KEY
 	if env_key and env_key ~= "" then
 		M.options.api_key = env_key
+	elseif not M.options.api_key or M.options.api_key == "" then
+		-- Try to load from Keychain
+		local keychain_key = keychain_get()
+		if keychain_key then
+			M.options.api_key = keychain_key
+		end
 	end
 
 	return M.options
@@ -126,14 +189,24 @@ function M.get_api_key()
 	return M.options.api_key
 end
 
--- Set API key and save to config file
+-- Set API key and save to Keychain
 function M.set_api_key(key)
 	M.options.api_key = key
 
-	-- Save to config file
-	local file_config = load_config_file()
-	file_config.api_key = key
-	return save_config_file(file_config)
+	-- Save to Keychain
+	local success = keychain_set(key)
+	if success then
+		vim.notify("[claude-complete] API key saved to Keychain", vim.log.levels.INFO)
+	else
+		vim.notify("[claude-complete] Failed to save API key to Keychain", vim.log.levels.ERROR)
+	end
+	return success
+end
+
+-- Delete API key from Keychain
+function M.delete_api_key()
+	M.options.api_key = nil
+	return keychain_delete()
 end
 
 -- Set model

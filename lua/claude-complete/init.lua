@@ -115,8 +115,6 @@ local function setup_commands()
     vim.ui.input({ prompt = "Enter Anthropic API key: " }, function(input)
       if input and input ~= "" then
         if config.set_api_key(input) then
-          vim.notify("[claude-complete] API key saved to " .. config.get_config_file_path(), vim.log.levels.INFO)
-
           -- Verify the key
           api.health_check(function(ok, msg)
             if ok then
