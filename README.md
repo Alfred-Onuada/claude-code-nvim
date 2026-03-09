@@ -49,11 +49,13 @@ use {
 2. Configure the API key (choose one method):
 
    **Option A: Environment variable**
+
    ```bash
    export ANTHROPIC_API_KEY="your-api-key"
    ```
 
    **Option B: Setup command (stores in macOS Keychain)**
+
    ```vim
    :ClaudeCompleteSetup
    ```
@@ -64,25 +66,25 @@ use {
 
 ### Keymaps (in insert mode)
 
-| Key | Action |
-|-----|--------|
-| `<Tab>` | Accept full completion |
-| `<Esc>` | Dismiss completion |
-| `<C-Right>` | Accept next word |
-| `<C-Down>` | Accept next line |
+| Key         | Action                 |
+| ----------- | ---------------------- |
+| `<Tab>`     | Accept full completion |
+| `<Esc>`     | Dismiss completion     |
+| `<C-Right>` | Accept next word       |
+| `<C-Down>`  | Accept next line       |
 
 ### Commands
 
-| Command | Description |
-|---------|-------------|
-| `:ClaudeCompleteSetup` | Configure API key |
+| Command                        | Description               |
+| ------------------------------ | ------------------------- |
+| `:ClaudeCompleteSetup`         | Configure API key         |
 | `:ClaudeCompleteModel [model]` | Set or show current model |
-| `:ClaudeCompleteEnable` | Enable completions |
-| `:ClaudeCompleteDisable` | Disable completions |
-| `:ClaudeCompleteToggle` | Toggle completions |
-| `:ClaudeCompleteStatus` | Show current status |
-| `:ClaudeCompleteHealthCheck` | Test API connection |
-| `:ClaudeCompleteClearCache` | Clear import cache |
+| `:ClaudeCompleteEnable`        | Enable completions        |
+| `:ClaudeCompleteDisable`       | Disable completions       |
+| `:ClaudeCompleteToggle`        | Toggle completions        |
+| `:ClaudeCompleteStatus`        | Show current status       |
+| `:ClaudeCompleteHealthCheck`   | Test API connection       |
+| `:ClaudeCompleteClearCache`    | Clear import cache        |
 
 ## Configuration
 
@@ -133,13 +135,15 @@ require("claude-complete").setup({
 
 ## Available Models
 
-| Model | Speed | Quality | Cost |
-|-------|-------|---------|------|
-| `claude-haiku-4-5-20251001` | Fastest | Good | $1/$5 per MTok |
-| `claude-sonnet-4-6` | Fast | Better | $3/$15 per MTok |
-| `claude-opus-4-6` | Moderate | Best | $5/$25 per MTok |
+All Anthropic models are supported. Some popular choices for autocomplete:
 
-For autocomplete, **Haiku** is recommended due to its low latency.
+| Model                       | Speed    | Quality | Cost            |
+| --------------------------- | -------- | ------- | --------------- |
+| `claude-haiku-4-5-20251001` | Fastest  | Good    | $1/$5 per MTok  |
+| `claude-sonnet-4-6`         | Fast     | Better  | $3/$15 per MTok |
+| `claude-opus-4-6`           | Moderate | Best    | $5/$25 per MTok |
+
+For autocomplete, **Haiku** is recommended due to its low latency. See the [Anthropic documentation](https://docs.anthropic.com/en/docs/about-claude/models) for a full list of available models.
 
 ## How It Works
 
@@ -185,4 +189,4 @@ MIT
 ## Acknowledgments
 
 - [Anthropic](https://www.anthropic.com/) for the Claude API
-- Inspired by GitHub Copilot and Codeium
+- Inspired by GitHub Copilot

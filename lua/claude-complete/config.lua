@@ -34,14 +34,12 @@ end
 -- Save API key to macOS Keychain
 local function keychain_set(api_key)
 	-- -U flag updates existing entry or creates new one
-	local exit_code = os.execute(
-		string.format(
-			'security add-generic-password -s "%s" -a "%s" -w "%s" -U',
-			KEYCHAIN_SERVICE,
-			KEYCHAIN_ACCOUNT,
-			api_key:gsub('"', '\\"') -- Escape quotes in the key
-		)
-	)
+	local exit_code = os.execute(string.format(
+		'security add-generic-password -s "%s" -a "%s" -w "%s" -U',
+		KEYCHAIN_SERVICE,
+		KEYCHAIN_ACCOUNT,
+		api_key:gsub('"', '\\"') -- Escape quotes in the key
+	))
 
 	return exit_code == 0 or exit_code == true
 end
