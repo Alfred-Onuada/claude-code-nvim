@@ -26,6 +26,7 @@ local function build_prompt(context)
 		[[You are an inline code completion engine. Output ONLY the raw code to insert at <|CURSOR|>.
 
 CRITICAL RULES:
+- VERY IMPORTANT: If the natural flow requires just one line output just one line, don't try to complete too far ahead.
 - Output ONLY raw code, NO markdown, NO code fences, NO ```
 - NO explanations, NO comments about what you're doing
 - Do NOT repeat existing code before or after cursor
@@ -33,7 +34,6 @@ CRITICAL RULES:
 - Match the existing code style and indentation
 - If the code is already complete or no completion makes sense, output an empty space " "
 - Do NOT invent new code if the cursor is at a natural stopping point
-- If the natural flow requires just one line output just one line, don't try to complete too far ahead
 
 File: %s (%s)
 
